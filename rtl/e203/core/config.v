@@ -1,0 +1,3 @@
+// `define E203_CFG_ADDR_SIZE_IS_16
+// `define E203_CFG_ADDR_SIZE_IS_24
+`define E203_CFG_ADDR_SIZE_IS_32
