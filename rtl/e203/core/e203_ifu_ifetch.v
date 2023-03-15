@@ -38,9 +38,9 @@ module e203_ifu_ifetch(
   input pipe_flush_req,
   input [`E203_PC_SIZE-1:0] pipe_flush_add_op1,
   input [`E203_PC_SIZE-1:0] pipe_flush_add_op2,
-  `ifdef E203_TIMING_BOOST//}
+  `ifdef E203_TIMING_BOOST
   input [`E203_PC_-1:0] pipe_flush_pc,
-  `endif//}
+  `endif
 
   input ifu_halt_req,
   output ifu_halt_ack,
@@ -174,10 +174,10 @@ wire ifetch_replay_req;
 // 如果是reset后取指，使用pc_rtvec
 // 否则为顺序取址，使用当前pc值
 wire [`E203_PC_SIZE-1:0] pc_add_op1 = 
-                          `ifndef E203_TIMING_BOOST//}
+                          `ifndef E203_TIMING_BOOST
                             pipe_flush_req ? pipe_flush_add_op1 :
                             dly_pipe_flush_req ? pc_r :
-                          `endif//}
+                          `endif
                             ifetch_replay_req ? pc_r :
                             bjp_req ? prdt_pc_add_op1 :
                             ifu_reset_req ? pc_rtvec : pc_r;
@@ -186,10 +186,10 @@ wire [`E203_PC_SIZE-1:0] pc_add_op1 =
 // 如果是reset后取指，加0
 // 否则为顺序取址，使用pc自增值
 wire [`E203_PC_SIZE-1:0] pc_add_op2 =
-                          `ifndef E203_TIMING_BOOST//}
+                          `ifndef E203_TIMING_BOOST
                             pipe_flush_req ? pipe_flush_add_op1 :
                             dly_pipe_flush_req ? `E203_PC_SIZE'b0 :
-                          `endif//}
+                          `endif
                             ifetch_replay_req ? `E203_PC_SIZE'b0 :
                             bjp_req ? prdt_pc_add_op2 :
                             ifu_reset_req ? `E203_PC_SIZE'b0 : pc_incr_ofst;
@@ -204,12 +204,12 @@ assign pc_nxt_pre = pc_add_op1 + pc_add_op2;
 
 // 如果EXU产生流水线冲刷，使用EXU送过来的pc值
 // 否则使用前面计算出的pc初值
-`ifndef E203_TIMING_BOOST//}
+`ifndef E203_TIMING_BOOST
 assign pc_nxt = {pc_nxt_pre[`E203_PC_SIZE-1:1], 1'b0};
-`else//}{
+`else{
 assign pc_nxt = pipe_flush_req ? {pipe_flush_pc[`E203_PC_SIZE-1:1], 1'b0}
               : dly_pipe_flush_req ? {pc_r[`E203_PC_SIZE-1:1], 1'b0} : {pc_nxt_pre[`E203_PC_SIZE-1:1], 1'b0};
-`endif//}
+`endif
 
 // 产生下一条待取指的pc值
 sirv_gnrl_dfflr #(`E203_PC_SIZE) pc_dfflr(pc_ena, pc_nxt, pc_r, clk, rst_n);
