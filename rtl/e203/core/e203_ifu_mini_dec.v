@@ -1,4 +1,4 @@
-`include "../e203_defines.v"
+`include "e203_defines.v"
 
 module e203_ifu_mini_dec(
   input [`E203_INSTR_SIZE-1:0] instr,

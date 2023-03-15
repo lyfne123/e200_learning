@@ -15,3 +15,7 @@
 `define E203_RFIDX_WIDTH 5
 
 `define E203_XLEN 32
+
+`define E203_DECINFO_WIDTH 32 // TODO: should be modified
+
+`define E203_INSTR_SIZE 32
