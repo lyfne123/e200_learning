@@ -295,6 +295,21 @@ wire rv32_fence_fencei;
 wire bjp_op = dec_bjp | rv32_mret | (rv32_dret & (~rv32_dret_ilgl)) | rv32_fence_fencei;
 
 wire [`E203_DECINFO_BJP_WIDTH-1:0] bjp_info_bus;
+ assign bjp_info_bus[`E203_DECINFO_GRP] = `E203_DECINFO_GRP_BJP;
+ assign bjp_info_bus[`E203_DECINFO_RV32] = rv32;
+ assign bjp_info_bus[`E203_DECINFO_BJP_JUMP] = dec_jal | dec_jalr;
+ assign bjp_info_bus[`E203_DECINFO_BJP_BPRDT] = i_prdt_taken;
+ assign bjp_info_bus[`E203_DECINFO_BJP_BEQ] = rv32_beq | rv16_beqz;
+ assign bjp_info_bus[`E203_DECINFO_BJP_BNE] = rv32_bne | rv16_bnez;
+ assign bjp_info_bus[`E203_DECINFO_BJP_BLT] = rv32_blt;
+ assign bjp_info_bus[`E203_DECINFO_BJP_BGT] = rv32_bgt;
+ assign bjp_info_bus[`E203_DECINFO_BJP_BLTU] = rv32_bltu;
+ assign bjp_info_bus[`E203_DECINFO_BJP_BGTU] = rv32_bgtu;
+ assign bjp_info_bus[`E203_DECINFO_BJP_BXX] = dec_bxx;
+ assign bjp_info_bus[`E203_DECINFO_BJP_MRET] = rv32_mret;
+ assign bjp_info_bus[`E203_DECINFO_BJP_DRET] = rv32_dret;
+ assign bjp_info_bus[`E203_DECINFO_BJP_FENCE] = rv32_fence;
+ assign bjp_info_bus[`E203_DECINFO_BJP_FENCEI] = rv32_fence_i;
 
 wire rv32_addi = rv32_op_imm & rv32_func3_000;
 wire rv32_slti = rv32_op_imm & rv32_func3_010;
@@ -346,15 +361,53 @@ wire alu_op = (~rv32_sxxi_shamt_ilgl) & (~rv16_sxxi_shamt_ilgl)
             | ecall_ebreak);
 wire need_imm;
 wire [`E203_DECINFO_ALU_WIDTH-1:0] alu_info_bus;
+assign alu_info_bus[`E203_DECINFO_GRP] = `E203_DECINFO_GRP_ALU;
+assign alu_info_bus[`E203_DECINFO_RV32] = rv32;
+assign alu_info_bus[`E203_DECINFO_ALU_ADD] = rv32_add | rv32_addi | rv32_auipc | rv16_addi4spn | rv16_addi |
+                                             rv16_addi16sp | rv16_add | rv16_li | rv16_mv;
+assign alu_info_bus[`E203_DECINFO_ALU_SUB] = rv32_sub | rv16_sub;
+assign alu_info_bus[`E203_DECINFO_ALU_SLT] = rv32_slt | rv32_slti;
+assign alu_info_bus[`E203_DECINFO_ALU_SLTU] = rv32_sltu | rv32_sltiu;
+assign alu_info_bus[`E203_DECINFO_ALU_XOR] = rv32_xor | rv32_xori | rv16_xor;
+assign alu_info_bus[`E203_DECINFO_ALU_SLL] = rv32_sll | rv32_slli | rv16_slli;
+assign alu_info_bus[`E203_DECINFO_ALU_SRL] = rv32_srl | rv32_srli | rv16_srli;
+assign alu_info_bus[`E203_DECINFO_ALU_SRA] = rv32_sra | rv32_srai | rv16_srai;
+assign alu_info_bus[`E203_DECINFO_ALU_OR] = rv32_or | rv32_ori | rv16_or;
+assign alu_info_bus[`E203_DECINFO_ALU_AND] = rv32_and | rv32_andi | rv16_and | rv16_andi;
+assign alu_info_bus[`E203_DECINFO_ALU_LUI] = rv32_lui | rv16_lui;
+assign alu_info_bus[`E203_DECINFO_ALU_OP2IMM] = need_imm;
+assign alu_info_bus[`E203_DECINFO_ALU_OP1PC] = rv32_auipc;
+assign alu_info_bus[`E203_DECINFO_ALU_NOP] = rv32_nop | rv16_nop;
+assign alu_info_bus[`E203_DECINFO_ALU_ECAL] = rv32_ecall;
+assign alu_info_bus[`E203_DECINFO_ALU_EBRK] = rv32_ebreak | rv16_ebreak;
+assign alu_info_bus[`E203_DECINFO_ALU_WFI] = rv32_wfi;
 
 // 生成CSR单元所需的信息总线。CSR为ALU的子单元
 wire csr_op = rv32_csr;
 wire [`E203_DECINFO_CSR_WIDTH-1:0] csr_info_bus;
+assign csr_info_bus[`E203_DECINFO_GRP] = `E203_DECINFO_GRP_CSR;
+assign csr_info_bus[`E203_DECINFO_RV32] = rv32;
+assign csr_info_bus[`E203_DECINFO_CSR_CSRRW] = rv32_csrrw | rv32_csrrwi;
+assign csr_info_bus[`E203_DECINFO_CSR_CSRRS] = rv32_csrrs | rv32_csrrsi;
+assign csr_info_bus[`E203_DECINFO_CSR_CSRRC] = rv32_csrrc | rv32_csrrci;
+assign csr_info_bus[`E203_DECINFO_CSR_RS1IMM] = rv32_csrrwi | rv32_csrrsi | rv32_csrrci;
+assign csr_info_bus[`E203_DECINFO_CSR_ZIMMM] = rv32_rs1;
+assign csr_info_bus[`E203_DECINFO_CSR_RS1IS0] = rv32_rs1_x0;
+assign csr_info_bus[`E203_DECINFO_CSR_CSRIDX] = rv32_instr[31:20];
 
 assign rv32_fence = rv32_miscmem & rv32_func3_000;
 assign rv32_fence_i = rv32_miscmem & rv32_func3_001;
 
 assign rv32_fence_fencei = rv32_miscmem;
+
+wire rv32_mul = rv32_op & rv32_func3_000 & rv32_func7_0000001;
+wire rv32_mulh = rv32_op & rv32_func3_001 & rv32_func7_0000001;
+wire rv32_mulhsu = rv32_op & rv32_func3_010 & rv32_func7_0000001;
+wire rv32_mulhu = rv32_op & rv32_func3_011 & rv32_func7_0000001;
+wire rv32_div = rv32_op & rv32_func3_100 & rv32_func7_0000001;
+wire rv32_divu = rv32_op & rv32_func3_101 & rv32_func7_0000001;
+wire rv32_rem = rv32_op & rv32_func3_110 & rv32_func7_0000001;
+wire rv32_remu = rv32_op & rv32_func3_111 & rv32_func7_0000001;
 
 // 生成乘除法单元所需的信息总线
 `ifdef E203_SUPPORT_MULDIV
@@ -365,17 +418,86 @@ wire muldiv_op = 1'b0;
 `endif
 
 wire [`E203_DECINFO_MULDIV_WIDTH-1:0] muldiv_info_bus;
+assign muldiv_info_bus[`E203_DECINFO_GRP] = `E203_DECINFO_GRP_MULDIV;
+assign muldiv_info_bus[`E203_DECINFO_RV32] = rv32;
+assign muldiv_info_bus[`E203_DECINFO_MULDIV_MUL] = rv32_mul;
+assign muldiv_info_bus[`E203_DECINFO_MULDIV_MULH] = rv32_mulh;
+assign muldiv_info_bus[`E203_DECINFO_MULDIV_MULHSU] = rv32_mulhsu;
+assign muldiv_info_bus[`E203_DECINFO_MULDIV_MULHU] = rv32_mulhu;
+assign muldiv_info_bus[`E203_DECINFO_MULDIV_DIV] = rv32_div;
+assign muldiv_info_bus[`E203_DECINFO_MULDIV_DIVU] = rv32_divu;
+assign muldiv_info_bus[`E203_DECINFO_MULDIV_REM] = rv32_rem;
+assign muldiv_info_bus[`E203_DECINFO_MULDIV_REMU] = rv32_remu;
+assign muldiv_info_bus[`E203_DECINFO_MULDIV_B2B] = i_muldiv_b2b;
+
+assign dec_mulhsu = rv32_mulh | rv32_mulhsu | rv32_mulhu;
+assign dec_mul = rv32_mul;
+assign dec_div = rv32_div;
+assign dec_divu = rv32_divu;
+assign dec_rem = rv32_rem;
+assign dec_remu = rv32_remu;
+
+wire rv32_lb = rv32_load & rv32_func3_000;
+wire rv32_lh = rv32_load & rv32_func3_001;
+wire rv32_lw = rv32_load & rv32_func3_010;
+wire rv32_lbu = rv32_load & rv32_func3_100;
+wire rv32_lhu = rv32_load & rv32_func3_101;
+
+wire rv32_sb = rv32_store & rv32_func3_000;
+wire rv32_sh = rv32_store & rv32_func3_001;
+wire rv32_sw = rv32_store & rv32_func3_010;
 
 `ifdef E203_SUPPORT_AMO
 wire rv32_lr_w = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b00010);
+wire rv32_sc_w = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b00011);
+wire rv32_amoswap_w = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b00001);
+wire rv32_amoadd_w = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b00000);
+wire rv32_amoxor_w = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b00100);
+wire rv32_amoand_w = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b01100);
+wire rv32_amoor_w = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b01000);
+wire rv32_amomin_w = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b10000);
+wire rv32_amomax_w = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b10100);
+wire rv32_amominu_w = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b11000);
+wire rv32_amomaxu_w = rv32_amo & rv32_func3_010 & (rv32_func7[6:2] == 5'b11100);
 `endif
 `ifndef E203_SUPPORT_AMO
 wire rv32_lr_w = 1'b0;
+wire rv32_sc_w = 1'b0;
+wire rv32_amoswap_w = 1'b0;
+wire rv32_amoadd_w = 1'b0;
+wire rv32_amoxor_w = 1'b0;
+wire rv32_amoand_w = 1'b0;
+wire rv32_amoor_w = 1'b0;
+wire rv32_amomin_w = 1'b0;
+wire rv32_amomax_w = 1'b0;
+wire rv32_amominu_w = 1'b0;
+wire rv32_amomaxu_w = 1'b0;
 `endif
 
 // 生成AGU单元所需的信息总线。AGU单元是ALU的一个子单元，用于处理AMO，Load和Store指令
 wire amoldst_op = rv32_amo | rv32_load | rv32_store | rv16_lw | rv16_sw | (rv16_lwsp & (~rv16_lwsp_ilgl)) | rv16_swsp;
+wire [1:0] lsu_info_size = rv32 ? rv32_func3[1:0] : 2'b10;
+wire lsu_info_usign = rv32 ? rv32_func3[2] : 1'b0;
+
 wire [`E203_DECINFO_AGU_WIDTH-1:0] agu_info_bus;
+assign agu_info_bus[`E203_DECINFO_GRP] = `E203_DECINFO_GRP_AGU;
+assign agu_info_bus[`E203_DECINFO_RV32] = rv32;
+assign agu_info_bus[`E203_DECINFO_AGU_LOAD] = rv32_load | rv32_lr_w | rv16_lw | rv16_lwsp;
+assign agu_info_bus[`E203_DECINFO_AGU_STORE] = rv32_store | rv32_sc_w | rv16_sw | rv16_swsp;
+assign agu_info_bus[`E203_DECINFO_AGU_SIZE] = lsu_info_size;
+assign agu_info_bus[`E203_DECINFO_AGU_USIGN] = lsu_info_usign;
+assign agu_info_bus[`E203_DECINFO_AGU_EXCL] = rv32_lr_w | rv32_sc_w;
+assign agu_info_bus[`E203_DECINFO_AGU_AMO] = rv32_amo & (~(rv32_lr_w | rv32_sc_w));
+assign agu_info_bus[`E203_DECINFO_AGU_AMOSWAP] = rv32_amoswap_w;
+assign agu_info_bus[`E203_DECINFO_AGU_AMOADD] = rv32_amoadd_w;
+assign agu_info_bus[`E203_DECINFO_AGU_AMOAND] = rv32_amoand_w;
+assign agu_info_bus[`E203_DECINFO_AGU_AMOOR] = rv32_amoor_w;
+assign agu_info_bus[`E203_DECINFO_AGU_AMOXOR] = rv32_amoxor_w;
+assign agu_info_bus[`E203_DECINFO_AGU_AMOMAX] = rv32_amomax_w;
+assign agu_info_bus[`E203_DECINFO_AGU_AMOMIN] = rv32_amomin_w;
+assign agu_info_bus[`E203_DECINFO_AGU_AMOMAXU] = rv32_amomaxu_w;
+assign agu_info_bus[`E203_DECINFO_AGU_AMOMINU] = rv32_amominu_w;
+assign agu_info_bus[`E203_DECINFO_AGU_OP2IMM] = need_imm;
 
 wire rv32_all0s_ilgl = rv32_func7_0000000 &
                        rv32_rs1_x0 &
