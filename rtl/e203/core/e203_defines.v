@@ -1,13 +1,27 @@
 `include "config.v"
 
 `ifdef E203_CFG_ADDR_SIZE_IS_16
+  `define E203_ADDR_SIZE_IS_16
+  `define E203_ADDR_SIZE 16
   `define E203_PC_SIZE 16
 `endif
 `ifdef E203_CFG_ADDR_SIZE_IS_24
+  `define E203_ADDR_SIZE_IS_24
+  `define E203_ADDR_SIZE 24
   `define E203_PC_SIZE 24
 `endif
 `ifdef E203_CFG_ADDR_SIZE_IS_32
+  `define E203_ADDR_SIZE_IS_32
+  `define E203_ADDR_SIZE 32
   `define E203_PC_SIZE 32
+`endif
+
+`define E203_SUPPORT_MTVEC
+
+`define E203_CFG_XLEN_IS_32
+`ifdef E203_CFG_XLEN_IS_32
+  `define E203_XLEN_IS_32
+  `define E203_XLEN 32
 `endif
 
 `define E203_INSTR_SIZE 32
@@ -22,7 +36,10 @@
   `define E203_RFREG_NUM 16
 `endif
 
-`define E203_XLEN 32
+`define E203_HART_NUM 1
+`define E203_HART_ID_W 1
+`define E203_LIRQ_NUM 1
+`define E203_EVT_NUM 1
 
 `define E203_DECINFO_GRP_WIDTH 3
 `define E203_DECINFO_GRP_ALU `E203_DECINFO_GRP_WIDTH'd0
