@@ -13,6 +13,14 @@
 `define E203_INSTR_SIZE 32
 
 `define E203_RFIDX_WIDTH 5
+`ifdef E203_CFG_REGNUM_IS_32
+  `define E203_RFREG_NUM_IS_32
+  `define E203_RFREG_NUM 32
+`endif
+`ifdef E203_CFG_REGNUM_IS_16
+  `define E203_RFREG_NUM_IS_16
+  `define E203_RFREG_NUM 16
+`endif
 
 `define E203_XLEN 32
 

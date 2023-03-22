@@ -1,3 +1,15 @@
 // `define E203_CFG_ADDR_SIZE_IS_16
 // `define E203_CFG_ADDR_SIZE_IS_24
 `define E203_CFG_ADDR_SIZE_IS_32
+
+`ifdef E203_CFG_ADDR_SIZE_IS_16
+  `define E203_CFG_ADDR_SIZE 16
+`endif
+`ifdef E203_CFG_ADDR_SIZE_IS_24
+  `define E203_CFG_ADDR_SIZE 24
+`endif
+`ifdef E203_CFG_ADDR_SIZE_IS_32
+  `define E203_CFG_ADDR_SIZE 32
+`endif
+
+`define E203_CFG_REGNUM_IS_32

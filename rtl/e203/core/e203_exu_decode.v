@@ -791,16 +791,6 @@ assign dec_rs1x0 = (dec_rs1idx == `E203_RFIDX_WIDTH'b0);
 assign dec_rs2x0 = (dec_rs2idx == `E203_RFIDX_WIDTH'b0);
 
 wire rv_index_ilgl;
-`ifdef E203_RFREG_NUM_IS_4
-assign rv_index_ilgl = (|dec_rs1idx[`E203_RFIDX_WIDTH-1:2]) |
-                       (|dec_rs2idx[`E203_RFIDX_WIDTH-1:2]) |
-                       (|dec_rdidx[`E203_RFIDX_WIDTH-1:2]);
-`endif
-`ifdef E203_RFREG_NUM_IS_8
-assign rv_index_ilgl = (|dec_rs1idx[`E203_RFIDX_WIDTH-1:3]) |
-                       (|dec_rs2idx[`E203_RFIDX_WIDTH-1:3]) |
-                       (|dec_rdidx[`E203_RFIDX_WIDTH-1:3]);
-`endif
 `ifdef E203_RFREG_NUM_IS_16
 assign rv_index_ilgl = (|dec_rs1idx[`E203_RFIDX_WIDTH-1:4]) |
                        (|dec_rs2idx[`E203_RFIDX_WIDTH-1:4]) |
