@@ -58,15 +58,15 @@ module e203_exu_disp(
   output disp_oitf_rs3en,
   output disp_oitf_rdwen,
 
-output [`E203_RFIDX_WIDTH-1:0] disp_oitf_rs1idx,
-output [`E203_RFIDX_WIDTH-1:0] disp_oitf_rs2idx,
-output [`E203_RFIDX_WIDTH-1:0] disp_oitf_rs3idx,
-output [`E203_RFIDX_WIDTH-1:0] disp_oitf_rdidx,
+  output [`E203_RFIDX_WIDTH-1:0] disp_oitf_rs1idx,
+  output [`E203_RFIDX_WIDTH-1:0] disp_oitf_rs2idx,
+  output [`E203_RFIDX_WIDTH-1:0] disp_oitf_rs3idx,
+  output [`E203_RFIDX_WIDTH-1:0] disp_oitf_rdidx,
 
-output [`E203_PC_SIZE-1:0] disp_oitf_pc,
+  output [`E203_PC_SIZE-1:0] disp_oitf_pc,
 
-input clk,
-input rst_n
+  input clk,
+  input rst_n
 );
 
 wire [`E203_DECINFO_GRP_WIDTH-1:0] disp_i_info_grp = disp_i_info[`E203_DECINFO_GRP];
@@ -80,6 +80,7 @@ wire disp_alu_longp_real = disp_o_alu_longpipe;
 wire disp_fence_fencei = (disp_i_info_grp == `E203_DECINFO_GRP_BJP) &
                          (disp_i_info[`E203_DECINFO_BJP_FENCE] | disp_i_info[`E203_DECINFO_BJP_FENCEI]);
 
+// 将指令派遣给ALU的接口采用valid-ready模式的握手信号
 wire disp_i_valid_pos;
 wire disp_i_ready_pos = disp_o_alu_ready;
 assign disp_o_alu_valid = disp_i_valid_pos;
@@ -103,20 +104,21 @@ assign disp_i_ready = disp_condition & disp_i_valid_pos;
 wire [`E203_XLEN-1:0] disp_i_rs1_msked = disp_i_rs1 & {`E203_XLEN{~disp_i_rs1x0}};
 wire [`E203_XLEN-1:0] disp_i_rs2_msked = disp_i_rs2 & {`E203_XLEN{~disp_i_rs2x0}};
 
+// 派遣操作数和指令信息
 assign disp_o_alu_rs1 = disp_i_rs1_msked;
 assign disp_o_alu_rs2 = disp_i_rs2_msked;
-assign disp_o_alu_rdwen = disp_i_rdwen;
-assign disp_o_alu_rdidx = disp_i_rdidx;
-assign disp_o_alu_info = disp_i_info;
+assign disp_o_alu_rdwen = disp_i_rdwen; // 是否写回结果寄存器
+assign disp_o_alu_rdidx = disp_i_rdidx; // 写回的结果寄存器索引
+assign disp_o_alu_info = disp_i_info; // 指令信息
 
 assign disp_oitf_ena = disp_o_alu_valid & disp_o_alu_ready & disp_alu_longp_real;
 
-assign disp_o_alu_imm = disp_i_imm;
-assign disp_o_alu_pc = disp_i_pc;
+assign disp_o_alu_imm = disp_i_imm; // 指令使用的立即数
+assign disp_o_alu_pc = disp_i_pc; // 指令pc
 assign disp_o_alu_itag = disp_oitf_ptr;
-assign disp_o_alu_misalgn = disp_i_misalgn;
-assign disp_o_alu_buserr = disp_i_buserr;
-assign disp_o_alu_ilegl = disp_i_ilegl;
+assign disp_o_alu_misalgn = disp_i_misalgn; // 发生非对齐错误
+assign disp_o_alu_buserr = disp_i_buserr; // 发生存储器访问错误
+assign disp_o_alu_ilegl = disp_i_ilegl; // 发生非法指令错误
 
 assign disp_oitf_rs1en = disp_i_rs1en;
 assign disp_oitf_rs2en = disp_i_rs2en;

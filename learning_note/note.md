@@ -188,3 +188,4 @@ Mini Decoder例化了一个完整的Decoder，通过将无关端口置0的方式
 
 是否支持csr指令
 
+是否支持ALU内置乘除法
