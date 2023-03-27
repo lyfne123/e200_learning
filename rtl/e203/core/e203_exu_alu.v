@@ -182,7 +182,39 @@ wire csr_sel_eai;
 `endif
 
 e203_exu_alu_csrctrl u_e203_exu_alu_csrctrl(
+`ifdef E203_HAS_CSR_EAI
+  .csr_sel_eai(csr_sel_eai),
+  .eai_xs_off(eai_xs_off),
+  .eai_csr_valid(eai_csr_valid),
+  .eai_csr_ready(eai_csr_ready),
+  .eai_csr_addr(eai_csr_addr),
+  .eai_csr_wr(eai_csr_wr),
+  .eai_csr_wdata(eai_csr_wdata),
+  .eai_csr_rdata(eai_csr_rdata),
+`endif
+  .csr_access_ilgl(csr_access_ilgl),
 
+  .csr_i_valid(csr_i_valid),
+  .csr_i_ready(csr_i_ready),
+
+  .csr_i_rs1(csr_i_rs1),
+  .csr_i_info(csr_i_info[`E203_DECINFO_CSR_WIDTH-1:0]),
+  .csr_i_rdwen(csr_i_rdwen),
+
+  .csr_ena(csr_ena),
+  .csr_idx(csr_idx),
+  .csr_rd_en(csr_rd_en),
+  .csr_wr_en(csr_wr_en),
+  .read_csr_dat(read_csr_dat),
+  .wbck_csr_dat(wbck_csr_dat),
+
+  .csr_o_valid(csr_o_valid),
+  .csr_o_ready(csr_o_ready),
+  .csr_o_wbck_wdat(csr_o_wbck_wdat),
+  .csr_o_wbck_err(csr_o_wbck_err),
+
+  .clk(clk),
+  .rst_n(rst_n)
 );
 
 wire bjp_o_valid;
@@ -215,7 +247,40 @@ wire [`E203_DECINFO_WIDTH-1:0] bjp_i_info = {`E203_DECINFO_WIDTH{bjp_op}} & i_in
 wire [`E203_PC_SIZE-1:0] bjp_i_pc = {`E203_PC_SIZE{bjp_op}} & i_pc;
 
 e203_exu_alu_bjp u_e203_exu_alu_bjp(
+  .bjp_i_valid(bjp_i_valid),
+  .bjp_i_ready(bjp_i_ready),
+  .bjp_i_rs1(bjp_i_rs1),
+  .bjp_i_rs2(bjp_i_rs2),
+  .bjp_i_info(bjp_i_info[`E203_DECINFO_BJP_WIDTH-1:0]),
+  .bjp_i_imm(bjp_i_imm),
+  .bjp_i_pc(bjp_i_pc),
 
+  .bjp_o_valid(bjp_o_valid),
+  .bjp_o_ready(bjp_o_ready),
+  .bjp_o_wbck_wdat(bjp_o_wbck_wdat),
+  .bjp_o_wbck_err(bjp_o_wbck_err),
+
+  .bjp_o_cmt_bjp(bjp_o_cmt_bjp),
+  .bjp_o_cmt_mret(bjp_o_cmt_mret),
+  .bjp_o_cmt_dret(bjp_o_cmt_dret),
+  .bjp_o_cmt_fencei(bjp_o_cmt_fencei),
+  .bjp_o_cmt_prdt(bjp_o_cmt_prdt),
+  .bjp_o_cmt_rslv(bjp_o_cmt_rslv),
+
+  .bjp_req_alu_op1(bjp_req_alu_op1),
+  .bjp_req_alu_op2(bjp_req_alu_op2),
+  .bjp_req_alu_cmp_eq(bjp_req_alu_cmp_eq),
+  .bjp_req_alu_cmp_ne(bjp_req_alu_cmp_ne),
+  .bjp_req_alu_cmp_lt(bjp_req_alu_cmp_lt),
+  .bjp_req_alu_cmp_gt(bjp_req_alu_cmp_gt),
+  .bjp_req_alu_cmp_ltu(bjp_req_alu_cmp_ltu),
+  .bjp_req_alu_cmp_gtu(bjp_req_alu_cmp_gtu),
+  .bjp_req_alu_add(bjp_req_alu_add),
+  .bjp_req_alu_cmp_res(bjp_req_alu_cmp_res),
+  .bjp_req_alu_add_res(bjp_req_alu_add_res),
+
+  .clk(clk),
+  .rst_n(rst_n)
 );
 
 wire agu_o_valid;
@@ -257,7 +322,72 @@ wire [`E203_DECINFO_WIDTH-1:0] agu_i_info = {`E203_DECINFO_WIDTH{agu_op}} & i_in
 wire [`E203_PC_SIZE-1:0] agu_i_itag = {`E203_PC_SIZE{agu_op}} & i_itag;
 
 e203_exu_alu_lsuagu u_e203_exu_alu_lsuagu(
+  .agu_i_valid(agu_i_valid),
+  .agu_i_ready(agu_i_ready),
+  .agu_i_rs1(agu_i_rs1),
+  .agu_i_rs2(agu_i_rs2),
+  .agu_i_imm(agu_i_imm),
+  .agu_i_info(agu_i_info[`E203_DECINFO_AGU_WIDTH-1:0]),
+  .agu_i_longpipe(agu_i_longpipe),
+  .agu_i_itag(agu_i_itag),
 
+  .flush_pulse(flush_pulse),
+  .flush_req(flush_req),
+  .amo_wait(amo_wait),
+  .oitf_empty(oitf_empty),
+
+  .agu_o_valid(agu_o_valid),
+  .agu_o_ready(agu_o_ready),
+  .agu_o_wbck_wdat(agu_o_wbck_wdat),
+  .agu_o_wbck_err(agu_o_wbck_err),
+  .agu_o_cmt_misalgn(agu_o_cmt_misalgn),
+  .agu_o_cmt_ld(agu_o_cmt_ld),
+  .agu_o_cmt_stamo(agu_o_cmt_stamo),
+  .agu_o_cmt_buserr(agu_o_cmt_buserr),
+  .agu_o_cmt_badaddr(agu_o_cmt_badaddr),
+
+  .agu_icb_cmd_valid(agu_icb_cmd_valid),
+  .agu_icb_cmd_ready(agu_icb_cmd_ready),
+  .agu_icb_cmd_addr(agu_icb_cmd_addr),
+  .agu_icb_cmd_read(agu_icb_cmd_read),
+  .agu_icb_cmd_wdata(agu_icb_cmd_wdata),
+  .agu_icb_cmd_wmask(agu_icb_cmd_wmask),
+  .agu_icb_cmd_lock(agu_icb_cmd_lock),
+  .agu_icb_cmd_excl(agu_icb_cmd_excl),
+  .agu_icb_cmd_size(agu_icb_cmd_size),
+  .agu_icb_cmd_back2agu(agu_icb_cmd_back2agu),
+  .agu_icb_cmd_usign(agu_icb_cmd_usign),
+  .agu_icb_cmd_itag(agu_icb_cmd_itag),
+
+  .agu_icb_rsp_valid(agu_icb_rsp_valid),
+  .agu_icb_rsp_ready(agu_icb_rsp_ready),
+  .agu_icb_rsp_err(agu_icb_rsp_err),
+  .agu_icb_rsp_excl_ok(agu_icb_rsp_excl_ok),
+  .agu_icb_rsp_rdata(agu_icb_rsp_rdata),
+
+  .agu_req_alu_op1(agu_req_alu_op1),
+  .agu_req_alu_op2(agu_req_alu_op2),
+  .agu_req_alu_swap(agu_req_alu_swap),
+  .agu_req_alu_add(agu_req_alu_add),
+  .agu_req_alu_and(agu_req_alu_and),
+  .agu_req_alu_or(agu_req_alu_or),
+  .agu_req_alu_xor(agu_req_alu_xor),
+  .agu_req_alu_max(agu_req_alu_max),
+  .agu_req_alu_min(agu_req_alu_min),
+  .agu_req_alu_maxu(agu_req_alu_maxu),
+  .agu_req_alu_minu(agu_req_alu_minu),
+  .agu_req_alu_res(agu_req_alu_res),
+
+  .agu_sbf_0_ena(agu_sbf_0_ena),
+  .agu_sbf_0_nxt(agu_sbf_0_nxt),
+  .agu_sbf_0_r(agu_sbf_0_r),
+
+  .agu_sbf_1_ena(agu_sbf_1_ena),
+  .agu_sbf_1_nxt(agu_sbf_1_nxt),
+  .agu_sbf_1_r(agu_sbf_1_r),
+
+  .clk(clk),
+  .rst_n(rst_n)
 );
 
 wire alu_o_valid;
@@ -290,7 +420,39 @@ wire [`E203_DECINFO_WIDTH-1:0] alu_i_info = {`E203_DECINFO_WIDTH{alu_op}} & i_in
 wire [`E203_PC_SIZE-1:0] alu_i_pc = {`E203_PC_SIZE{alu_op}} & i_pc;
 
 e203_exu_alu_rglr u_e203_exu_alu_rglr(
+  .alu_i_valid(alu_i_valid),
+  .alu_i_ready(alu_i_ready),
+  .alu_i_rs1(alu_i_rs1),
+  .alu_i_rs2(alu_i_rs2),
+  .alu_i_info(alu_i_info),
+  .alu_i_imm(alu_i_imm),
+  .alu_i_pc(alu_i_pc),
 
+  .alu_o_valid(alu_o_valid),
+  .alu_o_ready(alu_o_ready),
+  .alu_o_wbck_wdat(alu_o_wbck_wdat),
+  .alu_o_wbck_err(alu_o_wbck_err),
+  .alu_o_cmt_ecall(alu_o_cmt_ecall),
+  .alu_o_cmt_ebreak(alu_o_cmt_ebreak),
+  .alu_o_cmt_wfi(alu_o_cmt_wfi),
+
+  .alu_req_alu_add(alu_req_alu_add),
+  .alu_req_alu_sub(alu_req_alu_sub),
+  .alu_req_alu_xor(alu_req_alu_xor),
+  .alu_req_alu_sll(alu_req_alu_sll),
+  .alu_req_alu_srl(alu_req_alu_srl),
+  .alu_req_alu_sra(alu_req_alu_sra),
+  .alu_req_alu_or(alu_req_alu_or),
+  .alu_req_alu_and(alu_req_alu_and),
+  .alu_req_alu_slt(alu_req_alu_slt),
+  .alu_req_alu_sltu(alu_req_alu_sltu),
+  .alu_req_alu_lui(alu_req_alu_lui),
+  .alu_req_alu_op1(alu_req_alu_op1),
+  .alu_req_alu_op2(alu_req_alu_op2),
+  .alu_req_alu_res(alu_req_alu_res),
+
+  .clk(clk),
+  .rst_n(rst_n)
 );
 
 `ifdef E203_SUPPORT_SHARE_MULDIV
@@ -320,7 +482,41 @@ wire [32:0] muldiv_sbf_1_nxt;
 wire [32:0] muldiv_sbf_1_r;
 
 e203_exu_alu_muldiv u_e203_exu_alu_muldiv(
+  .mdv_nob2b(mdv_nob2b),
 
+  .muldiv_i_valid(mdv_i_valid),
+  .muldiv_i_ready(mdv_i_ready),
+
+  .muldiv_i_rs1(mdv_i_rs1),
+  .muldiv_i_rs2(mdv_i_rs2),
+  .muldiv_i_imm(mdv_i_imm),
+  .muldiv_i_info(mdv_i_info[`E203_DECINFO_MULDIV_WIDTH-1:0]),
+  .muldiv_i_longpipe(mdv_i_longpipe),
+  .muldiv_i_itag(mdv_i_itag),
+
+  .flush_pulse(flush_pulse),
+
+  .muldiv_o_valid(mdv_o_valid),
+  .muldiv_o_ready(mdv_o_ready),
+  .muldiv_o_wbck_wdat(mdv_o_wbck_wdat),
+  .muldiv_o_wbck_err(mdv_o_wbck_err),
+
+  .muldiv_req_alu_op1(muldiv_req_alu_op1),
+  .muldiv_req_alu_op2(muldiv_req_alu_op2),
+  .muldiv_req_alu_add(muldiv_req_alu_add),
+  .muldiv_req_alu_sub(muldiv_req_alu_sub),
+  .muldiv_req_alu_res(muldiv_req_alu_res),
+
+  .muldiv_sbf_0_ena(muldiv_sbf_0_ena),
+  .muldiv_sbf_0_nxt(muldiv_sbf_0_nxt),
+  .muldiv_sbf_0_r(muldiv_sbf_0_r),
+
+  .muldiv_sbf_1_ena(muldiv_sbf_1_ena),
+  .muldiv_sbf_1_nxt(muldiv_sbf_1_nxt),
+  .muldiv_sbf_1_r(muldiv_sbf_1_r),
+
+  .clk(clk),
+  .rst_n(rst_n)
 );
 `endif
 
@@ -332,7 +528,77 @@ wire bjp_req_alu = bjp_op;
 wire agu_req_alu= agu_op;
 
 e203_exu_alu_dpath e203_exu_alu_dpath(
+  .alu_req_alu(alu_req_alu),
+  .alu_req_alu_add(alu_req_alu_add),
+  .alu_req_alu_sub(alu_req_alu_sub),
+  .alu_req_alu_xor(alu_req_alu_xor),
+  .alu_req_alu_sll(alu_req_alu_sll),
+  .alu_req_alu_srl(alu_req_alu_srl),
+  .alu_req_alu_sra(alu_req_alu_sra),
+  .alu_req_alu_or(alu_req_alu_or),
+  .alu_req_alu_and(alu_req_alu_and),
+  .alu_req_alu_slt(alu_req_alu_slt),
+  .alu_req_alu_sltu(alu_req_alu_sltu),
+  .alu_req_alu_lui(alu_req_alu_lui),
+  .alu_req_alu_op1(alu_req_alu_op1),
+  .alu_req_alu_op2(alu_req_alu_op2),
+  .alu_req_alu_res(alu_req_alu_res),
 
+  .bjp_req_alu(bjp_req_alu),
+  .bjp_req_alu_op1(bjp_req_alu_op1),
+  .bjp_req_alu_op2(bjp_req_alu_op2),
+  .bjp_req_alu_cmp_eq(bjp_req_alu_cmp_eq),
+  .bjp_req_alu_cmp_ne(bjp_req_alu_cmp_ne),
+  .bjp_req_alu_cmp_lt(bjp_req_alu_cmp_lt),
+  .bjp_req_alu_cmp_gt(bjp_req_alu_cmp_gt),
+  .bjp_req_alu_cmp_ltu(bjp_req_alu_cmp_ltu),
+  .bjp_req_alu_cmp_gtu(bjp_req_alu_cmp_gtu),
+  .bjp_req_alu_add(bjp_req_alu_add),
+  .bjp_req_alu_cmp_res(bjp_req_alu_cmp_res),
+  .bjp_req_alu_add_res(bjp_req_alu_add_res),
+
+  .agu_req_alu(agu_req_alu),
+  .agu_req_alu_op1(agu_req_alu_op1),
+  .agu_req_alu_op2(agu_req_alu_op2),
+  .agu_req_alu_swap(agu_req_alu_swap),
+  .agu_req_alu_add(agu_req_alu_add),
+  .agu_req_alu_and(agu_req_alu_and),
+  .agu_req_alu_or(agu_req_alu_or),
+  .agu_req_alu_xor(agu_req_alu_xor),
+  .agu_req_alu_max(agu_req_alu_max),
+  .agu_req_alu_min(agu_req_alu_min),
+  .agu_req_alu_maxu(agu_req_alu_maxu),
+  .agu_req_alu_minu(agu_req_alu_minu),
+  .agu_req_alu_res(agu_req_alu_res),
+
+  .agu_sbf_0_ena(agu_sbf_0_ena),
+  .agu_sbf_0_nxt(agu_sbf_0_nxt),
+  .agu_sbf_0_r(agu_sbf_0_r),
+
+  .agu_sbf_1_ena(agu_sbf_1_ena),
+  .agu_sbf_1_nxt(agu_sbf_1_nxt),
+  .agu_sbf_1_r(agu_sbf_1_r),
+
+`ifdef E203_SUPPORT_SHARE_MULDIV
+  .muldiv_req_alu(muldiv_req_alu),
+
+  .muldiv_req_alu_op1(muldiv_req_alu_op1),
+  .muldiv_req_alu_op2(muldiv_req_alu_op2),
+  .muldiv_req_alu_add(muldiv_req_alu_add),
+  .muldiv_req_alu_sub(muldiv_req_alu_sub),
+  .muldiv_req_alu_res(muldiv_req_alu_res),
+
+  .muldiv_sbf_0_ena(muldiv_sbf_0_ena),
+  .muldiv_sbf_0_nxt(muldiv_sbf_0_nxt),
+  .muldiv_sbf_0_r(muldiv_sbf_0_r),
+
+  .muldiv_sbf_1_ena(muldiv_sbf_1_ena),
+  .muldiv_sbf_1_nxt(muldiv_sbf_1_nxt),
+  .muldiv_sbf_1_r(muldiv_sbf_1_r),
+`endif
+
+  .clk(clk),
+  .rst_n(rst_n)
 );
 
 wire ifu_excp_o_valid;
