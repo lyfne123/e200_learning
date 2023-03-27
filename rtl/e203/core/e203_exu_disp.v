@@ -85,9 +85,12 @@ wire disp_i_valid_pos;
 wire disp_i_ready_pos = disp_o_alu_ready;
 assign disp_o_alu_valid = disp_i_valid_pos;
 
+// 任一源操作数产生RAW相关性，则该指令和前序长指令存在RAW相关性
 wire raw_dep = oitfrd_match_disprs1 | oitfrd_match_disprs2 | oitfrd_match_disprs3;
+// 存在WAW相关性
 wire waw_dep = oitfrd_match_disprd;
 
+// RAW和WAW都需要阻塞派遣点
 wire dep = raw_dep | waw_dep;
 
 assign wfi_halt_exu_ack = oitf_empty & (~amo_wait);
