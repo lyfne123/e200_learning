@@ -1,6 +1,7 @@
 `include "e203_defines.v"
 
 module e203_exu_alu(
+  // dispatch和alu之间采用valid-ready模式的握手信号
   input i_valid,
   output i_ready,
 
@@ -104,7 +105,15 @@ input clk,
 input rst_n
 );
 
+// 对于发生取指异常的指令，单独列为一种类型，无需被具体执行
 wire ifu_excp_op = i_ilegl | i_buserr | i_misalgn;
+// 通过decode模块中的分组信息(info_bus)，判断需要什么单元执行此指令
+// alu中包括6个功能子单元
+// 普通alu计算(regular-alu)：逻辑运算，加减法，移位等指令
+// 访存地址生成(agu)：负责load，store和A扩展指令的地址生成
+// 分支预测解析(bjp)：负责branch和jump指令的解析和执行
+// csr读写控制(cst-ctrl)：负责csr指令的执行
+// 多周期乘除法器(mdv)：负责乘除法指令的执行
 wire alu_op = (~ifu_excp_op) & (i_info[`E203_DECINFO_GRP] == `E203_DECINFO_GRP_ALU);
 wire agu_op = (~ifu_excp_op) & (i_info[`E203_DECINFO_GRP] == `E203_DECINFO_GRP_AGU);
 wire bjp_op = (~ifu_excp_op) & (i_info[`E203_DECINFO_GRP] == `E203_DECINFO_GRP_BJP);
@@ -113,6 +122,8 @@ wire csr_op = (~ifu_excp_op) & (i_info[`E203_DECINFO_GRP] == `E203_DECINFO_GRP_C
 wire mdv_op = (~ifu_excp_op) & (i_info[`E203_DECINFO_GRP] == `E203_DECINFO_GRP_MULDIV);
 `endif
 
+// 根据不同的指令分组指示信号，将对应子单元的输入valid置高，选择对应子单元的ready信号作为反馈给上游
+// 派遣模块的ready握手信号
 `ifdef E203_SUPPORT_SHARE_MULDIV
 wire mdv_i_valid = i_valid & mdv_op;
 `endif
@@ -131,6 +142,7 @@ wire bjp_i_ready;
 wire csr_i_ready;
 wire ifu_excp_i_ready;
 
+// 本质上是使用and or实现的并行多路选择器
 assign i_ready = (agu_i_ready & agu_op) |
                 `ifdef E203_SUPPORT_SHARE_MULDIV
                  (mdv_i_ready & mdv_op) |
@@ -156,6 +168,8 @@ wire csr_o_ready;
 wire [`E203_XLEN-1:0] csr_o_wbck_wdat;
 wire csr_o_wbck_err;
 
+// 为了节省动态功耗，采用逻辑门控的方式，增加一级与门，对与子单元输入的信号与分组指示
+// 信号进行与操作，那么在无需使用该子单元时，其输入信号就都是0，从而降低动态翻转功耗
 wire [`E203_XLEN-1:0] csr_i_rs1 = {`E203_XLEN{csr_op}} & i_rs1;
 wire [`E203_XLEN-1:0] csr_i_rs2 = {`E203_XLEN{csr_op}} & i_rs2;
 wire [`E203_XLEN-1:0] csr_i_imm = {`E203_XLEN{csr_op}} & i_imm;

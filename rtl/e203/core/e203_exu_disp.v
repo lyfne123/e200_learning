@@ -92,12 +92,19 @@ wire dep = raw_dep | waw_dep;
 
 assign wfi_halt_exu_ack = oitf_empty & (~amo_wait);
 
+// 派遣条件信号
+// 如果当前派遣指令需要访问csr寄存器改变其值，必须等待oitf为空，即所有长指令都已执行完毕后才可
+// 如果当前派遣指令属于fence和fence.i指令，必须等待oitf为空，即保证fence和fence.i之前的指令都执行完毕
+// 如果已交付了一条wfi指令，则必须立即阻塞派遣点，不让后续的指令派遣，从而尽快让处理器进入wfi休眠模式
+// 如果发生了数据相关性，则阻塞派遣点
+// 如果当前派遣的是长指令，必须等待oitf有空
 wire disp_condition = (disp_csr ? oitf_empty : 1'b1) &
                       (disp_fence_fencei ? oitf_empty : 1'b1) &
                       (~wfi_halt_exu_req) &
                       (~dep) &
                       (disp_alu_longp_prdt ? disp_oitf_ready : 1'b1);
 
+// 只有满足派遣条件时，才会发生派遣
 assign disp_i_valid_pos = disp_condition & disp_i_valid;
 assign disp_i_ready = disp_condition & disp_i_valid_pos;
 
