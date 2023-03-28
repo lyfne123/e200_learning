@@ -37,4 +37,42 @@ module e203_exu_alu_rglr(
   input clk,
   input rst_n
 );
+
+// 第二个源操作数是否使用立即数
+wire op2imm = alu_i_info[`E203_DECINFO_ALU_OP2IMM];
+// 第一个源操作数是否使用pc
+wire op1pc = alu_i_info[`E203_DECINFO_ALU_OP1PC];
+
+assign alu_req_alu_op1 = op1pc ? alu_i_pc : alu_i_rs1;
+assign alu_req_alu_op2 = op2imm ? alu_i_imm : alu_i_rs2;
+
+wire nop = alu_i_info[`E203_DECINFO_ALU_NOP];
+wire ecall = alu_i_info[`E203_DECINFO_ALU_ECAL];
+wire ebreak = alu_i_info[`E203_DECINFO_ALU_EBRK];
+wire wfi = alu_i_info[`E203_DECINFO_ALU_WFI];
+
+// 根据指令类型，产生所需计算的操作类型
+assign alu_req_alu_add = alu_i_info[`E203_DECINFO_ALU_ADD] & (~nop);
+assign alu_req_alu_sub = alu_i_info[`E203_DECINFO_ALU_SUB];
+assign alu_req_alu_xor = alu_i_info[`E203_DECINFO_ALU_XOR];
+assign alu_req_alu_sll = alu_i_info[`E203_DECINFO_ALU_SLL];
+assign alu_req_alu_srl = alu_i_info[`E203_DECINFO_ALU_SRL];
+assign alu_req_alu_sra = alu_i_info[`E203_DECINFO_ALU_SRA];
+assign alu_req_alu_or = alu_i_info[`E203_DECINFO_ALU_OR];
+assign alu_req_alu_and = alu_i_info[`E203_DECINFO_ALU_AND];
+assign alu_req_alu_slt = alu_i_info[`E203_DECINFO_ALU_SLT];
+assign alu_req_alu_sltu = alu_i_info[`E203_DECINFO_ALU_SLTU];
+assign alu_req_alu_lui = alu_i_info[`E203_DECINFO_ALU_LUI];
+
+assign alu_o_valid = alu_i_valid;
+assign alu_i_ready = alu_o_ready;
+// 取回计算结果
+assign alu_o_wbck_wdat = alu_req_alu_res;
+
+assign alu_o_cmt_ecall = ecall;
+assign alu_o_cmt_ebreak = ebreak;
+assign alu_o_cmt_wfi = wfi;
+
+assign alu_o_wbck_err = alu_o_cmt_ecall | alu_o_cmt_ebreak | alu_o_cmt_wfi;
+
 endmodule
