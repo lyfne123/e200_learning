@@ -128,12 +128,14 @@ wire sbf_1_ena;
 wire [32:0] sbf_1_nxt;
 wire [32:0] sbf_1_r;
 
+// 移位器
 wire [`E203_XLEN-1:0] shifter_in1;
 wire [4:0] shifter_in2;
 wire [`E203_XLEN-1:0] shifter_res;
 
 wire op_shift = op_sra | op_sll | op_srl;
 
+// 为了节省面积，将右移转化为左移
 wire shifter_op1_reverse = {shifter_op1[00], shifter_op1[01], shifter_op1[02], shifter_op1[03],
                             shifter_op1[04], shifter_op1[05], shifter_op1[06], shifter_op1[07],
                             shifter_op1[08], shifter_op1[09], shifter_op1[10], shifter_op1[11],
@@ -178,6 +180,7 @@ wire [`E203_ALU_ADDER_WIDTH-1:0] adder_op2 =
 `endif
   misc_adder_op2;
 
+// 加法器
 wire adder_cin;
 wire [`E203_ALU_ADDER_WIDTH-1:0] adder_in1;
 wire [`E203_ALU_ADDER_WIDTH-1:0] adder_in2;
@@ -209,6 +212,7 @@ assign adder_cin = adder_addsub & adder_sub;
 
 assign adder_res = adder_in1 + adder_in2 + adder_cin;
 
+// 异或逻辑门
 wire [`E203_XLEN-1:0] xorer_in1;
 wire [`E203_XLEN-1:0] xorer_in2;
 
@@ -244,6 +248,7 @@ wire maxmin_sel_op1 = ((op_max | op_maxu) & op1_gt_op2) |
 
 wire [`E203_XLEN-1:0] maxmin_res = maxmin_sel_op1 ? misc_op1 : misc_op2;
 
+// 最终数据通路结果，使用多路选择器
 wire [`E203_XLEN-1:0] alu_dpath_res = ({`E203_XLEN{op_or}} & orer_res) |
                                       ({`E203_XLEN{op_and}} & ander_res) |
                                       ({`E203_XLEN{op_xor}} & xorer_res) |
@@ -255,11 +260,13 @@ wire [`E203_XLEN-1:0] alu_dpath_res = ({`E203_XLEN{op_or}} & orer_res) |
                                       ({`E203_XLEN{op_slttu}} & slttu_res) |
                                       ({`E203_XLEN{op_max | op_maxu | op_min | op_minu}} & maxmin_res);
 
+// agu和mdv贡献的两份33位宽寄存器
 sirv_gnrl_dffl #(33) sbf_0_dffl(sbf_0_ena, sbf_0_nxt, sbf_0_r, clk);
 sirv_gnrl_dffl #(33) sbf_1_dffl(sbf_1_ena, sbf_1_nxt, sbf_1_r, clk);
 
 localparam DPATH_MIX_WIDTH = ((`E203_XLEN * 2) + 21);
 
+// 不同子单元共用运算通路
 assign {
   mux_op1,
   mux_op2,
@@ -284,7 +291,7 @@ assign {
   op_cmp_gt,
   op_cmp_ltu,
   op_cmp_gtu
-} =({DPATH_MIX_WIDTH{alu_req_alu}} & {
+} = ({DPATH_MIX_WIDTH{alu_req_alu}} & {
   alu_req_alu_op1,
   alu_req_alu_op2,
   1'b0,
@@ -366,6 +373,7 @@ assign bjp_req_alu_cmp_res = cmp_res;
 assign muldiv_req_alu_res = adder_res;
 `endif
 
+// 寄存器使能信号来自mdv还是agu
 assign sbf_0_ena =
 `ifdef E203_SUPPORT_SHARE_MULDIV
   muldiv_req_alu ? muldiv_sbf_0_ena :
@@ -377,6 +385,7 @@ assign sbf_1_ena =
 `endif
   agu_sbf_1_ena;
 
+// 寄存器写入数据来自mdv还是agu
 assign sbf_0_nxt =
 `ifdef E203_SUPPORT_SHARE_MULDIV
   muldiv_req_alu ? muldiv_sbf_0_nxt :
@@ -388,9 +397,11 @@ assign sbf_1_nxt =
 `endif
   {1'b0, agu_sbf_1_nxt};
 
+// 共享寄存器值送给agu
 assign agu_sbf_0_r = sbf_0_r[`E203_XLEN-1:0];
 assign agu_sbf_1_r = sbf_1_r[`E203_XLEN-1:0];
 
+// 共享寄存器值送给mdv
 `ifdef E203_SUPPORT_SHARE_MULDIV
 assign muldiv_sbf_0_r = sbf_0_r;
 assign muldiv_sbf_1_r = sbf_1_r;
