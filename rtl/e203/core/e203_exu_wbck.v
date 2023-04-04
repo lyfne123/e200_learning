@@ -1,16 +1,18 @@
 `include "e203_defines.v"
 
 module e203_exu_wbck(
+  // 单周期指令写回信号
   input alu_wbck_i_valid,
   output alu_wbck_i_ready,
-  input [`E203_XLEN-1:0] alu_wbck_i_wdat,
-  input [`E203_RFIDX_WIDTH-1:0] alu_wbck_i_rdidx,
+  input [`E203_XLEN-1:0] alu_wbck_i_wdat, // 数据值
+  input [`E203_RFIDX_WIDTH-1:0] alu_wbck_i_rdidx, // 寄存器索引
 
+  // 长周期指令写回信号
   input longp_wbck_i_valid,
   output longp_wbck_i_ready,
-  input [`E203_FLEN-1:0] longp_wbck_i_wdat,
+  input [`E203_FLEN-1:0] longp_wbck_i_wdat, // 数据值
   input [4:0] longp_wbck_i_flags,
-  input [`E203_RFIDX_WIDTH-1:0] longp_wbck_i_rdidx,
+  input [`E203_RFIDX_WIDTH-1:0] longp_wbck_i_rdidx, // 寄存器索引
 
   output rf_wbck_o_ena,
   output [`E203_XLEN-1:0] rf_wbck_o_wdat,
@@ -20,6 +22,7 @@ module e203_exu_wbck(
   input rst_n
 );
 
+// 使用优先级仲裁，如果两种指令同时写回，长指令优先级高
 wire wbck_ready4alu = (~longp_wbck_i_valid);
 wire wbck_sel_alu = alu_wbck_i_valid & wbck_ready4alu;
 

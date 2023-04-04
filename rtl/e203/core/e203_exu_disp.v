@@ -121,6 +121,8 @@ assign disp_o_alu_rdwen = disp_i_rdwen; // 是否写回结果寄存器
 assign disp_o_alu_rdidx = disp_i_rdidx; // 写回的结果寄存器索引
 assign disp_o_alu_info = disp_i_info; // 指令信息
 
+// 在派遣点产生oitf分配表项的使能信号
+// 如果当前派遣的指令为一个长指令，则产生此使能信号
 assign disp_oitf_ena = disp_o_alu_valid & disp_o_alu_ready & disp_alu_longp_real;
 
 assign disp_o_alu_imm = disp_i_imm; // 指令使用的立即数

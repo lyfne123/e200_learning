@@ -39,6 +39,7 @@ wire brchmis_flush_req_pre;
 assign brchmis_flush_req = brchmis_flush_req_pre & (~nonalu_excpirq_flush_req_raw);
 assign brchmis_flush_ack_pre = brchmis_flush_ack & (~nonalu_excpirq_flush_req_raw);
 
+// 如果预测结果和真实结果不符，需要进行流水线冲刷
 wire brchmis_need_flush = ((cmt_i_bjp & (cmt_i_bjp_prdt ^ cmt_i_bjp_rslv)) |
                            cmt_i_fencei | cmt_i_mret | cmt_i_dret);
 
@@ -52,6 +53,8 @@ assign brchmis_flush_add_op2 = cmt_i_dret ? `E203_PC_SIZE'b0 : cmt_i_mret ? `E20
                                   cmt_i_imm[`E203_PC_SIZE-1:0];
 
 `ifdef E203_TIMING_BOOST
+// 如果预测了需要跳转，但实际结果不跳转，则流水线冲刷重新取指的新pc指向此跳转指令的下一条指令(pc + 4)
+// 如果是预测了不需要跳转，但实际结果要跳转，则流水线冲刷重新取指的新pc指向此跳转指令目标地址(pc + offset)
 assign brchmis_flush_pc = (cmt_i_fencei | (cmt_i_bjp & cmt_i_bjp_prdt)) ? (cmt_i_pc + (cmt_i_rv32 ? `E203_PC_SIZE'd4 : `E203_PC_SIZE'd2)) :
                             (cmt_i_bjp & (~cmt_i_bjp_prdt)) ? (cmt_i_pc + cmt_i_imm[`E203_PC_SIZE-1:0]) :
                               cmt_i_dret ? csr_dpc_r : csr_epc_r;
